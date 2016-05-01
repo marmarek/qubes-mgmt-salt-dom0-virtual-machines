@@ -37,17 +37,29 @@ qubesctl saltutil.clear_cache -l quiet --out quiet > /dev/null || true
 qubesctl saltutil.sync_all refresh=true -l quiet --out quiet > /dev/null || true
 
 # Enable States
-#qubesctl top.enable qvm.sys-net saltenv=dom0 -l quiet --out quiet > /dev/null || true
-#qubesctl top.enable qvm.sys-firewall saltenv=dom0 -l quiet --out quiet > /dev/null || true
-#qubesctl top.enable qvm.sys-whonix saltenv=dom0 -l quiet --out quiet > /dev/null || true
-#qubesctl top.enable qvm.anon-whonix saltenv=dom0 -l quiet --out quiet > /dev/null || true
-#qubesctl top.enable qvm.personal saltenv=dom0 -l quiet --out quiet > /dev/null || true
-#qubesctl top.enable qvm.work saltenv=dom0 -l quiet --out quiet > /dev/null || true
-#qubesctl top.enable qvm.untrusted saltenv=dom0 -l quiet --out quiet > /dev/null || true
-#qubesctl top.enable qvm.vault saltenv=dom0 -l quiet --out quiet > /dev/null || true
+#qubesctl top.enable qvm.sys-net -l quiet --out quiet > /dev/null || true
+#qubesctl top.enable qvm.sys-firewall -l quiet --out quiet > /dev/null || true
+#qubesctl top.enable qvm.sys-whonix -l quiet --out quiet > /dev/null || true
+#qubesctl top.enable qvm.anon-whonix -l quiet --out quiet > /dev/null || true
+#qubesctl top.enable qvm.personal -l quiet --out quiet > /dev/null || true
+#qubesctl top.enable qvm.work -l quiet --out quiet > /dev/null || true
+#qubesctl top.enable qvm.untrusted -l quiet --out quiet > /dev/null || true
+#qubesctl top.enable qvm.vault -l quiet --out quiet > /dev/null || true
 
 # Enable Pillar States
-qubesctl top.enable qvm saltenv=dom0 pillar=true -l quiet --out quiet > /dev/null || true
+qubesctl top.enable qvm pillar=true -l quiet --out quiet > /dev/null || true
+
+# Migrate enabled tops from dom0 to base environment
+for top in sys-net sys-firewall sys-whonix anon-whonix personal work untrusted vault sys-net-with-usb; do
+    if [ -r /srv/salt/_tops/dom0/qvm.$top.top ]; then
+        rm -f /srv/salt/_tops/dom0/qvm.$top.top
+        qubesctl top.enable qvm.$top -l quiet --out quiet > /dev/null || true
+    fi
+done
+
+if [ -r /srv/pillar/_tops/dom0/qvm.top ]; then
+    rm -f /srv/pillar/_tops/dom0/qvm.top
+fi
 
 %files
 %defattr(-,root,root)
